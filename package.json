@@ -1,0 +1,11 @@
+{
+  "name": "nmplot",
+  "version": "1.0.0",
+  "description": "Javascript library to draw and animate shapes on canvas",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "\"Nikhil Mittal\"",
+  "license": "ISC"
+}
