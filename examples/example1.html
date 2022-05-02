@@ -11,10 +11,10 @@
       <canvas id="mycanvas"></canvas>
 	<script src="../src/nmplot.js"></script>
     <script>
-        const s1 = new NmplotShape("rectangle", { l1: 5, l2: 3 });
-        console.log(s1);
+        var s1 = new NmplotShape("rectangle", { l1: 5, l2: 3 });
         container = new NmplotContainer();
         container.add(s1);
+        var nmPlotCanvas = new NmplotCanvas("mycanvas", container);
     </script>
   </body>
 </html>
