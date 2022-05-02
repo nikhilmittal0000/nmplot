@@ -35,6 +35,7 @@
     };
     global.NmplotContainer = NmplotContainer;
     NmplotContainer.prototype.add = function (shape) {
+        shape.container = this;
         this.shapes.push(shape);
     };
 
@@ -67,9 +68,12 @@
     NmplotShape.prototype.addPoint = function (x, y) {
         this.points.push(Nmplot.createCoord(x, y));
     };
-    NmplotShape.prototype.moveTo = function (x, y) {
+    NmplotShape.prototype.moveTo = function (x, y, reRender = true) {
         this.pos.x = x;
         this.pos.y = y;
+        if (reRender) {
+            this.container.canvas.render();
+        }
     };
 
     var NmplotCanvas = function (canvasId, container) {
@@ -86,6 +90,7 @@
         this.ctx = this.canvas.getContext("2d");
 
         this.nmplotContainer = container;
+        container.canvas = this;
         this.setCanvasDims(
             Nmplot.DEFAULT_CANVAS_DIMS.WIDTH,
             Nmplot.DEFAULT_CANVAS_DIMS.HEIGHT
