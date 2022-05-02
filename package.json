@@ -4,8 +4,12 @@
   "description": "Javascript library to draw and animate shapes on canvas",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build" : "webpack --config webpack.config.js"
   },
   "author": "\"Nikhil Mittal\"",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.72.0",
+    "webpack-cli": "^4.9.2"
+  }
 }
