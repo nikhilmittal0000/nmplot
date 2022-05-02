@@ -13,7 +13,12 @@
             WIDTH: 1000,
             HEIGHT: 500,
         },
+        DEFAULT_AXIS_COLOR: {
+            X: "red",
+            Y: "blue",
+        },
         DEFAULT_BACKGROUND_COLOR: "#DCDCDC",
+        DEFAULT_GRID_STATUS: true,
         createCoord: function (x, y) {
             return {
                 x,
@@ -63,25 +68,48 @@
         this.name = "NmplotCanvas";
         this.description = "Object to render Nmplot container on canvas";
         this.backgroundColor = Nmplot.DEFAULT_BACKGROUND_COLOR;
+        this.isGridActive = Nmplot.DEFAULT_GRID_STATUS;
+        this.axisColor = {
+            x: Nmplot.DEFAULT_AXIS_COLOR.X,
+            y: Nmplot.DEFAULT_AXIS_COLOR.Y,
+        };
+
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
+
         this.nmplotContainer = container;
         this.setCanvasDims(
             Nmplot.DEFAULT_CANVAS_DIMS.WIDTH,
             Nmplot.DEFAULT_CANVAS_DIMS.HEIGHT
         );
+        this.centerX = this.canvas.width / 2;
+        this.centerY = this.canvas.height / 2;
         this.resetOrigin(false);
         this.render();
     };
     global.NmplotCanvas = NmplotCanvas;
-    NmplotCanvas.prototype.setBackground = function () {
+    NmplotCanvas.prototype.renderBackground = function () {
         // canvas = document.getElementById("mycanvas");
         // ctx = canvas.getContext("2d");
         this.ctx.fillStyle = this.backgroundColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
+    NmplotCanvas.prototype.renderGrid = function () {
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = this.axisColor.x;
+        this.ctx.moveTo(0, this.centerY);
+        this.ctx.lineTo(this.canvas.width, this.centerY);
+        this.ctx.stroke();
+
+        this.ctx.beginPath();
+        this.ctx.strokeStyle = this.axisColor.y;
+        this.ctx.moveTo(this.centerX, 0);
+        this.ctx.lineTo(this.centerX, this.canvas.height);
+        this.ctx.stroke();
+    };
     NmplotCanvas.prototype.render = function () {
-        this.setBackground();
+        this.renderBackground();
+        this.renderGrid();
         var shapes = this.nmplotContainer.shapes;
 
         for (var i = 0; i < shapes.length; i++) {
