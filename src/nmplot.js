@@ -40,6 +40,10 @@
 
     var NmplotShape = function (shape, dim) {
         this.points = [];
+        this.pos = {
+            x: 0,
+            y: 0,
+        };
         this.scaleX = Nmplot.DEFAULT_SHAPE_SCALE.X;
         this.scaleY = Nmplot.DEFAULT_SHAPE_SCALE.X;
         this.defaultColor = "black";
@@ -62,6 +66,10 @@
     global.NmplotShape = NmplotShape;
     NmplotShape.prototype.addPoint = function (x, y) {
         this.points.push(Nmplot.createCoord(x, y));
+    };
+    NmplotShape.prototype.moveTo = function (x, y) {
+        this.pos.x = x;
+        this.pos.y = y;
     };
 
     var NmplotCanvas = function (canvasId, container) {
@@ -89,8 +97,6 @@
     };
     global.NmplotCanvas = NmplotCanvas;
     NmplotCanvas.prototype.renderBackground = function () {
-        // canvas = document.getElementById("mycanvas");
-        // ctx = canvas.getContext("2d");
         this.ctx.fillStyle = this.backgroundColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
@@ -115,23 +121,30 @@
         for (var i = 0; i < shapes.length; i++) {
             var shape = shapes[i];
             this.ctx.fillStyle = shape.defaultColor;
-            console.log(shape);
             var points = shape.points;
             this.ctx.beginPath();
             for (var j = 0; j < points.length; j++) {
                 if (j === 0) {
                     this.ctx.moveTo(
                         this.originX +
-                            shape.scaleX * (points[j].x - shape.origin.x),
+                            shape.scaleX *
+                                (shape.pos.x + points[j].x - shape.origin.x),
                         this.originY +
-                            shape.scaleY * (points[j].y - shape.origin.y)
+                            shape.scaleY *
+                                (-1 * shape.pos.y +
+                                    points[j].y -
+                                    shape.origin.y)
                     );
                 } else {
                     this.ctx.lineTo(
                         this.originX +
-                            shape.scaleX * (points[j].x - shape.origin.x),
+                            shape.scaleX *
+                                (shape.pos.x + points[j].x - shape.origin.x),
                         this.originY +
-                            shape.scaleY * (points[j].y - shape.origin.y)
+                            shape.scaleY *
+                                (-1 * shape.pos.y +
+                                    points[j].y -
+                                    shape.origin.y)
                     );
                 }
             }
@@ -142,7 +155,6 @@
         this.originX = Math.floor(this.canvas.width / 2);
         this.originY = Math.floor(this.canvas.height / 2);
         if (reRender || reRender == null) {
-            console.log("a");
             this.render();
         }
     };
