@@ -14,6 +14,12 @@
             HEIGHT: 500,
         },
         DEFAULT_BACKGROUND_COLOR: "#DCDCDC",
+        createCoord: function (x, y) {
+            return {
+                x,
+                y,
+            };
+        },
     };
     global.Nmplot = Nmplot;
 
@@ -26,12 +32,6 @@
     NmplotContainer.prototype.add = function (shape) {
         this.shapes.push(shape);
     };
-    function coord(x, y) {
-        return {
-            x,
-            y,
-        };
-    }
 
     var NmplotShape = function (shape, dim) {
         this.points = [];
@@ -43,12 +43,12 @@
             case "rectangle":
                 this.shape = "rectangle";
                 this.points = [
-                    coord(0, 0),
-                    coord(dim.l1, 0),
-                    coord(dim.l1, dim.l2),
-                    coord(0, dim.l2),
+                    Nmplot.createCoord(0, 0),
+                    Nmplot.createCoord(dim.l1, 0),
+                    Nmplot.createCoord(dim.l1, dim.l2),
+                    Nmplot.createCoord(0, dim.l2),
                 ];
-                this.origin = coord(dim.l1 / 2, dim.l2 / 2);
+                this.origin = Nmplot.createCoord(dim.l1 / 2, dim.l2 / 2);
                 break;
             default:
                 this.shape = shape;
@@ -56,12 +56,13 @@
     };
     global.NmplotShape = NmplotShape;
     NmplotShape.prototype.addPoint = function (x, y) {
-        this.points.push(coord(x, y));
+        this.points.push(Nmplot.createCoord(x, y));
     };
 
     var NmplotCanvas = function (canvasId, container) {
         this.name = "NmplotCanvas";
         this.description = "Object to render Nmplot container on canvas";
+        this.backgroundColor = Nmplot.DEFAULT_BACKGROUND_COLOR;
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas.getContext("2d");
         this.nmplotContainer = container;
@@ -69,14 +70,14 @@
             Nmplot.DEFAULT_CANVAS_DIMS.WIDTH,
             Nmplot.DEFAULT_CANVAS_DIMS.HEIGHT
         );
-        this.resetOrigin();
+        this.resetOrigin(false);
         this.render();
     };
     global.NmplotCanvas = NmplotCanvas;
     NmplotCanvas.prototype.setBackground = function () {
         // canvas = document.getElementById("mycanvas");
         // ctx = canvas.getContext("2d");
-        this.ctx.fillStyle = Nmplot.DEFAULT_BACKGROUND_COLOR;
+        this.ctx.fillStyle = this.backgroundColor;
         this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
     };
     NmplotCanvas.prototype.render = function () {
@@ -109,12 +110,22 @@
             this.ctx.fill();
         }
     };
-    NmplotCanvas.prototype.resetOrigin = function () {
+    NmplotCanvas.prototype.resetOrigin = function (reRender) {
         this.originX = Math.floor(this.canvas.width / 2);
         this.originY = Math.floor(this.canvas.height / 2);
+        if (reRender || reRender == null) {
+            console.log("a");
+            this.render();
+        }
     };
     NmplotCanvas.prototype.setCanvasDims = function (x, y) {
         this.canvas.width = x;
         this.canvas.height = y;
+    };
+    NmplotCanvas.prototype.updateBackgroundColor = function (color, reRender) {
+        this.backgroundColor = color;
+        if (reRender || reRender == null) {
+            this.render();
+        }
     };
 })(window);

@@ -34,6 +34,4 @@ A library in Javascript to draw and animate shapes on canvas based on custom log
 
 ## Feedback
 
----
-
 You can write any feedback to nikhilmittal0000@gmail.com
