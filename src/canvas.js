@@ -53,7 +53,7 @@ NmplotCanvas.prototype.render = function () {
         var shapes = container.shapes;
         for (var i = 0; i < shapes.length; i++) {
             var shape = shapes[i];
-            // this.renderShape(shape);
+            this.renderShape(shape);
         }
     }
 };
