@@ -5,9 +5,9 @@
 /*!***********************!*\
   !*** ./src/canvas.js ***!
   \***********************/
-/***/ ((module) => {
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
 
-//const { DragAndScale } = require("./dragAndScale");
+const { DragAndScale } = __webpack_require__(/*! ./dragAndScale */ "./src/dragAndScale.js");
 
 var NmplotCanvas = function (canvasId, container) {
     this.name = "NmplotCanvas";
@@ -23,7 +23,7 @@ var NmplotCanvas = function (canvasId, container) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
     // this.createMouseEventsHandler();
-    // this.ds = new DragAndScale(this);
+    this.ds = new DragAndScale(this);
     this.containers = [container];
     container.canvas = this;
     this.setCanvasDims(
@@ -45,8 +45,9 @@ NmplotCanvas.prototype.renderGrid = function () {
     this.ctx.lineTo(this.canvas.width, this.posY);
     this.ctx.stroke();
 
+    this.ctx.lineWidth = 1;
     this.ctx.beginPath();
-    this.ctx.strokeStyle = this.axisColor.y;
+    this.ctx.strokeStyle = this.axisColor.x;
     this.ctx.moveTo(this.posX, 0);
     this.ctx.lineTo(this.posX, this.canvas.height);
     this.ctx.stroke();
@@ -61,24 +62,29 @@ NmplotCanvas.prototype.render = function () {
         var shapes = container.shapes;
         for (var i = 0; i < shapes.length; i++) {
             var shape = shapes[i];
-            this.renderShape(shape);
+            // this.renderShape(shape);
         }
     }
 };
 NmplotCanvas.prototype.renderContainer = function (container) {
     this.ctx.lineWidth = 5;
+    this.ctx.shadowBlur = 0;
     if (container.selected) {
-        this.ctx.shadowColor = "#d53";
-        this.ctx.shadowBlur = 20;
-    } else {
-        this.ctx.shadowBlur = 1;
+        this.ctx.shadowColor = "#696969";
+        this.ctx.shadowBlur = 5;
     }
-    this.ctx.strokeRect(
+    this.ctx.fillStyle = "#F7F5F2";
+    this.ctx.strokeStyle = "#8D8DAA";
+    this.ctx.beginPath();
+    this.ctx.rect(
         this.posX + container.posX - container.width / 2,
         this.posY + container.posY - container.height / 2,
         container.width,
         container.height
     );
+    this.ctx.stroke();
+    this.ctx.fill();
+    this.ctx.shadowBlur = 0;
 };
 NmplotCanvas.prototype.renderShape = function (shape) {
     this.ctx.fillStyle = shape.defaultColor;
@@ -158,13 +164,12 @@ NmplotContainer.prototype.add = function (shape) {
     this.shapes.push(shape);
 };
 NmplotContainer.prototype.isPointInside = function (x, y, margin) {
-    // console.log(x, y);
     var isInsideX =
-        x > this.posX - this.width / 2 && x < this.posX + this.width / 2;
-    // console.log(isInsideX);
+        x > this.canvas.posX + this.posX - this.width / 2 &&
+        x < this.canvas.posX + this.posX + this.width / 2;
     var isInsideY =
-        y > this.posY - this.height / 2 && y < this.posY + this.height / 2;
-    // console.log(isInsideX && isInsideY);
+        y > this.canvas.posY + this.posY - this.height / 2 &&
+        y < this.canvas.posY + this.posY + this.height / 2;
     return isInsideX && isInsideY;
 };
 
@@ -189,6 +194,85 @@ NmplotContainer.prototype.getBoundedPoint = function (x, y) {
     return [x, y];
 };
 module.exports.NmplotContainer = NmplotContainer;
+
+
+/***/ }),
+
+/***/ "./src/dragAndScale.js":
+/*!*****************************!*\
+  !*** ./src/dragAndScale.js ***!
+  \*****************************/
+/***/ ((module) => {
+
+var DragAndScale = function (nmplotCanvas) {
+    this.name = "Drag and Scale";
+    this.last_mouse = [0, 0];
+    this.nmplotCanvas = nmplotCanvas;
+    this.canvas = nmplotCanvas.canvas;
+    this.bindEvents();
+};
+DragAndScale.prototype.bindEvents = function () {
+    this.canvas.addEventListener("mousemove", mouseMoving, false);
+    this.canvas.addEventListener("click", mouseClicked, false);
+    this.canvas.addEventListener("mousedown", mouseDown, false);
+    this.canvas.addEventListener("mouseup", mouseUp, false);
+    var rect = this.canvas.getBoundingClientRect();
+    var nmplotCanvas = this.nmplotCanvas;
+    var ds = this;
+    function mouseMoving(e) {
+        if (ds.isMouseDown) {
+            if (ds.mouseDownOnContainer == null) {
+                nmplotCanvas.posX += e.pageX - rect.left - ds.last_mouse[0];
+                nmplotCanvas.posY += e.pageY - rect.top - ds.last_mouse[1];
+            } else {
+                ds.mouseDownOnContainer.posX +=
+                    e.pageX - rect.left - ds.last_mouse[0];
+                ds.mouseDownOnContainer.posY +=
+                    e.pageY - rect.top - ds.last_mouse[1];
+            }
+            nmplotCanvas.render();
+        }
+        ds.last_mouse[0] = e.pageX - rect.left;
+        ds.last_mouse[1] = e.pageY - rect.top;
+    }
+    function mouseClicked(e) {
+        for (var i = nmplotCanvas.containers.length - 1; i >= 0; i--) {
+            nmplotCanvas.containers[i].selected = false;
+        }
+        for (var i = nmplotCanvas.containers.length - 1; i >= 0; i--) {
+            if (
+                nmplotCanvas.containers[i].isPointInside(
+                    e.pageX - rect.left,
+                    e.pageY - rect.top
+                )
+            ) {
+                nmplotCanvas.containers[i].selected = true;
+                break;
+            }
+        }
+        nmplotCanvas.render();
+    }
+    function mouseDown(e) {
+        ds.isMouseDown = true;
+        ds.mouseDownOnContainer = null;
+        for (var i = nmplotCanvas.containers.length - 1; i >= 0; i--) {
+            if (
+                nmplotCanvas.containers[i].isPointInside(
+                    e.pageX - rect.left,
+                    e.pageY - rect.top
+                )
+            ) {
+                ds.mouseDownOnContainer = nmplotCanvas.containers[i];
+                break;
+            }
+        }
+    }
+    function mouseUp(e) {
+        ds.isMouseDown = false;
+    }
+};
+
+module.exports.DragAndScale = DragAndScale;
 
 
 /***/ }),
@@ -231,7 +315,7 @@ var Nmplot = {
         X: 10,
         Y: 10,
     },
-    DEFAULT_BACKGROUND_COLOR: "#DCDCDC",
+    DEFAULT_BACKGROUND_COLOR: "#DFDFDE",
     DEFAULT_GRID_STATUS: true,
     createCoord: function (x, y) {
         return {

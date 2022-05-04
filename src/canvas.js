@@ -1,4 +1,4 @@
-//const { DragAndScale } = require("./dragAndScale");
+const { DragAndScale } = require("./dragAndScale");
 
 var NmplotCanvas = function (canvasId, container) {
     this.name = "NmplotCanvas";
@@ -14,7 +14,7 @@ var NmplotCanvas = function (canvasId, container) {
     this.canvas = document.getElementById(canvasId);
     this.ctx = this.canvas.getContext("2d");
     // this.createMouseEventsHandler();
-    // this.ds = new DragAndScale(this);
+    this.ds = new DragAndScale(this);
     this.containers = [container];
     container.canvas = this;
     this.setCanvasDims(
@@ -36,8 +36,9 @@ NmplotCanvas.prototype.renderGrid = function () {
     this.ctx.lineTo(this.canvas.width, this.posY);
     this.ctx.stroke();
 
+    this.ctx.lineWidth = 1;
     this.ctx.beginPath();
-    this.ctx.strokeStyle = this.axisColor.y;
+    this.ctx.strokeStyle = this.axisColor.x;
     this.ctx.moveTo(this.posX, 0);
     this.ctx.lineTo(this.posX, this.canvas.height);
     this.ctx.stroke();
@@ -52,24 +53,29 @@ NmplotCanvas.prototype.render = function () {
         var shapes = container.shapes;
         for (var i = 0; i < shapes.length; i++) {
             var shape = shapes[i];
-            this.renderShape(shape);
+            // this.renderShape(shape);
         }
     }
 };
 NmplotCanvas.prototype.renderContainer = function (container) {
     this.ctx.lineWidth = 5;
+    this.ctx.shadowBlur = 0;
     if (container.selected) {
-        this.ctx.shadowColor = "#d53";
-        this.ctx.shadowBlur = 20;
-    } else {
-        this.ctx.shadowBlur = 1;
+        this.ctx.shadowColor = "#696969";
+        this.ctx.shadowBlur = 5;
     }
-    this.ctx.strokeRect(
+    this.ctx.fillStyle = "#F7F5F2";
+    this.ctx.strokeStyle = "#8D8DAA";
+    this.ctx.beginPath();
+    this.ctx.rect(
         this.posX + container.posX - container.width / 2,
         this.posY + container.posY - container.height / 2,
         container.width,
         container.height
     );
+    this.ctx.stroke();
+    this.ctx.fill();
+    this.ctx.shadowBlur = 0;
 };
 NmplotCanvas.prototype.renderShape = function (shape) {
     this.ctx.fillStyle = shape.defaultColor;

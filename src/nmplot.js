@@ -30,7 +30,7 @@ var Nmplot = {
         X: 10,
         Y: 10,
     },
-    DEFAULT_BACKGROUND_COLOR: "#DCDCDC",
+    DEFAULT_BACKGROUND_COLOR: "#DFDFDE",
     DEFAULT_GRID_STATUS: true,
     createCoord: function (x, y) {
         return {

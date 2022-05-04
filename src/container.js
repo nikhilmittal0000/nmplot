@@ -15,13 +15,12 @@ NmplotContainer.prototype.add = function (shape) {
     this.shapes.push(shape);
 };
 NmplotContainer.prototype.isPointInside = function (x, y, margin) {
-    // console.log(x, y);
     var isInsideX =
-        x > this.posX - this.width / 2 && x < this.posX + this.width / 2;
-    // console.log(isInsideX);
+        x > this.canvas.posX + this.posX - this.width / 2 &&
+        x < this.canvas.posX + this.posX + this.width / 2;
     var isInsideY =
-        y > this.posY - this.height / 2 && y < this.posY + this.height / 2;
-    // console.log(isInsideX && isInsideY);
+        y > this.canvas.posY + this.posY - this.height / 2 &&
+        y < this.canvas.posY + this.posY + this.height / 2;
     return isInsideX && isInsideY;
 };
 
