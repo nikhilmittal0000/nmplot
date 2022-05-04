@@ -7,6 +7,16 @@ var Nmplot = {
         Y: 10,
     },
 
+    //Container
+    DEFAULT_CONTAINER_DIMS: {
+        X: 200,
+        Y: 300,
+    },
+    DEFAULT_CONTAINER_POS: {
+        X: 0,
+        Y: 0,
+    },
+
     //CANVAS
     DEFAULT_CANVAS_DIMS: {
         WIDTH: 1000,

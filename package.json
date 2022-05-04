@@ -2,11 +2,12 @@
   "name": "nmplot",
   "version": "1.0.0",
   "description": "Javascript library to draw and animate shapes on canvas",
-  "main": "index.js",
+  "main": "src/main.js",
   "scripts": {
-    "build" : "webpack --config webpack.config.js"
+    "build" : "webpack --config webpack.config.js",
+    "watch" : "webpack --watch --config webpack.config.js"
   },
-  "author": "\"Nikhil Mittal\"",
+  "author": "Nikhil Mittal",
   "license": "ISC",
   "devDependencies": {
     "webpack": "^5.72.0",

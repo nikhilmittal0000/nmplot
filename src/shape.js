@@ -26,10 +26,10 @@ var NmplotShape = function (shape, dim) {
 NmplotShape.prototype.addPoint = function (x, y) {
     this.points.push(Nmplot.createCoord(x, y));
 };
-NmplotShape.prototype.moveTo = function (x, y, reRender = true) {
+NmplotShape.prototype.moveTo = function (x, y, reRender) {
     this.pos.x = x;
     this.pos.y = y;
-    if (reRender) {
+    if (reRender || reRender == null) {
         this.container.canvas.render();
     }
 };

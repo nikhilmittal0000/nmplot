@@ -5,5 +5,8 @@ module.exports = {
     output: {
         filename: "nmplot.js",
         path: path.resolve(__dirname, "build"),
+        sourceMapFilename: "nmplot.js.map",
     },
+    devtool: "source-map",
+    mode: "development",
 };
