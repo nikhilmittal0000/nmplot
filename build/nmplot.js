@@ -14,6 +14,7 @@ var NmplotCanvas = function (canvasId, container) {
     this.description = "Object to render Nmplot container on canvas";
     this.backgroundColor = Nmplot.DEFAULT_BACKGROUND_COLOR;
 
+    this.scale = 1;
     this.isGridActive = Nmplot.DEFAULT_GRID_STATUS;
     this.axisColor = {
         x: Nmplot.DEFAULT_AXIS_COLOR.X,
@@ -41,15 +42,15 @@ NmplotCanvas.prototype.renderGrid = function () {
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.strokeStyle = this.axisColor.x;
-    this.ctx.moveTo(0, this.posY);
-    this.ctx.lineTo(this.canvas.width, this.posY);
+    this.ctx.moveTo(0, this.scale * this.posY);
+    this.ctx.lineTo(this.canvas.width, this.scale * this.posY);
     this.ctx.stroke();
 
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.strokeStyle = this.axisColor.x;
-    this.ctx.moveTo(this.posX, 0);
-    this.ctx.lineTo(this.posX, this.canvas.height);
+    this.ctx.moveTo(this.scale * this.posX, 0);
+    this.ctx.lineTo(this.scale * this.posX, this.canvas.height);
     this.ctx.stroke();
 };
 NmplotCanvas.prototype.render = function () {
@@ -77,12 +78,15 @@ NmplotCanvas.prototype.renderContainer = function (container) {
     this.ctx.strokeStyle = "#8D8DAA";
     this.ctx.beginPath();
     this.ctx.rect(
-        this.posX + container.posX - container.width / 2,
-        this.posY + container.posY - container.height / 2,
-        container.width,
-        container.height
+        this.scale * (this.posX + container.posX - container.width / 2),
+        this.scale * (this.posY + container.posY - container.height / 2),
+        this.scale * container.width,
+        this.scale * container.height
     );
-    this.ctx.stroke();
+    if (container.borderVisible) {
+        this.ctx.stroke();
+    }
+
     this.ctx.fill();
     this.ctx.shadowBlur = 0;
 };
@@ -105,9 +109,9 @@ NmplotCanvas.prototype.renderShape = function (shape) {
         ];
         point = shape.container.getBoundedPoint(point[0], point[1]);
         if (j === 0) {
-            this.ctx.moveTo(point[0], point[1]);
+            this.ctx.moveTo(this.scale * point[0], this.scale * point[1]);
         } else {
-            this.ctx.lineTo(point[0], point[1]);
+            this.ctx.lineTo(this.scale * point[0], this.scale * point[1]);
         }
     }
     this.ctx.fill();
@@ -158,6 +162,7 @@ var NmplotContainer = function () {
     this.posX = Nmplot.DEFAULT_CONTAINER_POS.X;
     this.posY = Nmplot.DEFAULT_CONTAINER_POS.Y;
     this.selected = false;
+    this.borderVisible = true;
 };
 NmplotContainer.prototype.add = function (shape) {
     shape.container = this;
@@ -165,11 +170,11 @@ NmplotContainer.prototype.add = function (shape) {
 };
 NmplotContainer.prototype.isPointInside = function (x, y, margin) {
     var isInsideX =
-        x > this.canvas.posX + this.posX - this.width / 2 &&
-        x < this.canvas.posX + this.posX + this.width / 2;
+        x > this.canvas.posX + this.posX - this.width / 2 - margin &&
+        x < this.canvas.posX + this.posX + this.width / 2 + margin;
     var isInsideY =
-        y > this.canvas.posY + this.posY - this.height / 2 &&
-        y < this.canvas.posY + this.posY + this.height / 2;
+        y > this.canvas.posY + this.posY - this.height / 2 - margin &&
+        y < this.canvas.posY + this.posY + this.height / 2 + margin;
     return isInsideX && isInsideY;
 };
 
@@ -193,6 +198,29 @@ NmplotContainer.prototype.getBoundedPoint = function (x, y) {
     }
     return [x, y];
 };
+NmplotContainer.prototype.pointOnSECorner = function (x, y) {
+    if (
+        x < this.canvas.posX + this.posX + this.width / 2 + 5 &&
+        x > this.canvas.posX + this.posX + this.width / 2 - 5 &&
+        y > this.canvas.posY + this.posY + this.height / 2 - 5 &&
+        y < this.canvas.posY + this.posY + this.height / 2 + 5
+    ) {
+        return true;
+    }
+    return false;
+};
+NmplotContainer.prototype.hideBorder = function (reRender) {
+    this.borderVisible = false;
+    if (reRender || reRender == null) {
+        this.canvas.render();
+    }
+};
+NmplotContainer.prototype.showBorder = function (reRender) {
+    this.borderVisible = true;
+    if (reRender || reRender == null) {
+        this.canvas.render();
+    }
+};
 module.exports.NmplotContainer = NmplotContainer;
 
 
@@ -209,6 +237,7 @@ var DragAndScale = function (nmplotCanvas) {
     this.last_mouse = [0, 0];
     this.nmplotCanvas = nmplotCanvas;
     this.canvas = nmplotCanvas.canvas;
+    this.pointOnCorner = false;
     this.bindEvents();
 };
 DragAndScale.prototype.bindEvents = function () {
@@ -220,20 +249,49 @@ DragAndScale.prototype.bindEvents = function () {
     var nmplotCanvas = this.nmplotCanvas;
     var ds = this;
     function mouseMoving(e) {
+        var currMousePos = [e.pageX - rect.left, e.pageY - rect.top];
+        var cursorType = "auto";
+        if (!ds.isMouseDown) {
+            for (var i = 0; i < nmplotCanvas.containers.length; i++) {
+                if (
+                    nmplotCanvas.containers[i].pointOnSECorner(
+                        currMousePos[0],
+                        currMousePos[1]
+                    )
+                ) {
+                    ds.pointOnCorner = true;
+                    cursorType = "se-resize";
+                }
+            }
+            ds.canvas.style.cursor = cursorType;
+        }
         if (ds.isMouseDown) {
-            if (ds.mouseDownOnContainer == null) {
-                nmplotCanvas.posX += e.pageX - rect.left - ds.last_mouse[0];
-                nmplotCanvas.posY += e.pageY - rect.top - ds.last_mouse[1];
-            } else {
+            if (ds.pointOnCorner) {
+                //Resize Window
+                console.log("Aaaaaa");
+                ds.mouseDownOnContainer.width +=
+                    currMousePos[0] - ds.last_mouse[0];
                 ds.mouseDownOnContainer.posX +=
-                    e.pageX - rect.left - ds.last_mouse[0];
+                    (currMousePos[0] - ds.last_mouse[0]) / 2;
+                ds.mouseDownOnContainer.height +=
+                    currMousePos[1] - ds.last_mouse[1];
                 ds.mouseDownOnContainer.posY +=
-                    e.pageY - rect.top - ds.last_mouse[1];
+                    (currMousePos[1] - ds.last_mouse[1]) / 2;
+            } else if (ds.mouseDownOnContainer == null) {
+                // Pan Background
+                nmplotCanvas.posX += currMousePos[0] - ds.last_mouse[0];
+                nmplotCanvas.posY += currMousePos[1] - ds.last_mouse[1];
+            } else {
+                //move container
+                ds.mouseDownOnContainer.posX +=
+                    currMousePos[0] - ds.last_mouse[0];
+                ds.mouseDownOnContainer.posY +=
+                    currMousePos[1] - ds.last_mouse[1];
             }
             nmplotCanvas.render();
         }
-        ds.last_mouse[0] = e.pageX - rect.left;
-        ds.last_mouse[1] = e.pageY - rect.top;
+        ds.last_mouse[0] = currMousePos[0];
+        ds.last_mouse[1] = currMousePos[1];
     }
     function mouseClicked(e) {
         for (var i = nmplotCanvas.containers.length - 1; i >= 0; i--) {
@@ -255,15 +313,30 @@ DragAndScale.prototype.bindEvents = function () {
     function mouseDown(e) {
         ds.isMouseDown = true;
         ds.mouseDownOnContainer = null;
+        var currMousePos = [e.pageX - rect.left, e.pageY - rect.top];
         for (var i = nmplotCanvas.containers.length - 1; i >= 0; i--) {
             if (
                 nmplotCanvas.containers[i].isPointInside(
                     e.pageX - rect.left,
-                    e.pageY - rect.top
+                    e.pageY - rect.top,
+                    5
                 )
             ) {
                 ds.mouseDownOnContainer = nmplotCanvas.containers[i];
                 break;
+            }
+        }
+        var cursorType = "auto";
+        ds.pointOnCorner = false;
+        for (var i = 0; i < nmplotCanvas.containers.length; i++) {
+            if (
+                nmplotCanvas.containers[i].pointOnSECorner(
+                    currMousePos[0],
+                    currMousePos[1]
+                )
+            ) {
+                ds.pointOnCorner = true;
+                cursorType = "se-resize";
             }
         }
     }

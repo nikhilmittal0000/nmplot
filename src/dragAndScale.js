@@ -3,6 +3,7 @@ var DragAndScale = function (nmplotCanvas) {
     this.last_mouse = [0, 0];
     this.nmplotCanvas = nmplotCanvas;
     this.canvas = nmplotCanvas.canvas;
+    this.pointOnCorner = false;
     this.bindEvents();
 };
 DragAndScale.prototype.bindEvents = function () {
@@ -14,20 +15,49 @@ DragAndScale.prototype.bindEvents = function () {
     var nmplotCanvas = this.nmplotCanvas;
     var ds = this;
     function mouseMoving(e) {
+        var currMousePos = [e.pageX - rect.left, e.pageY - rect.top];
+        var cursorType = "auto";
+        if (!ds.isMouseDown) {
+            for (var i = 0; i < nmplotCanvas.containers.length; i++) {
+                if (
+                    nmplotCanvas.containers[i].pointOnSECorner(
+                        currMousePos[0],
+                        currMousePos[1]
+                    )
+                ) {
+                    ds.pointOnCorner = true;
+                    cursorType = "se-resize";
+                }
+            }
+            ds.canvas.style.cursor = cursorType;
+        }
         if (ds.isMouseDown) {
-            if (ds.mouseDownOnContainer == null) {
-                nmplotCanvas.posX += e.pageX - rect.left - ds.last_mouse[0];
-                nmplotCanvas.posY += e.pageY - rect.top - ds.last_mouse[1];
-            } else {
+            if (ds.pointOnCorner) {
+                //Resize Window
+                console.log("Aaaaaa");
+                ds.mouseDownOnContainer.width +=
+                    currMousePos[0] - ds.last_mouse[0];
                 ds.mouseDownOnContainer.posX +=
-                    e.pageX - rect.left - ds.last_mouse[0];
+                    (currMousePos[0] - ds.last_mouse[0]) / 2;
+                ds.mouseDownOnContainer.height +=
+                    currMousePos[1] - ds.last_mouse[1];
                 ds.mouseDownOnContainer.posY +=
-                    e.pageY - rect.top - ds.last_mouse[1];
+                    (currMousePos[1] - ds.last_mouse[1]) / 2;
+            } else if (ds.mouseDownOnContainer == null) {
+                // Pan Background
+                nmplotCanvas.posX += currMousePos[0] - ds.last_mouse[0];
+                nmplotCanvas.posY += currMousePos[1] - ds.last_mouse[1];
+            } else {
+                //move container
+                ds.mouseDownOnContainer.posX +=
+                    currMousePos[0] - ds.last_mouse[0];
+                ds.mouseDownOnContainer.posY +=
+                    currMousePos[1] - ds.last_mouse[1];
             }
             nmplotCanvas.render();
         }
-        ds.last_mouse[0] = e.pageX - rect.left;
-        ds.last_mouse[1] = e.pageY - rect.top;
+        ds.last_mouse[0] = currMousePos[0];
+        ds.last_mouse[1] = currMousePos[1];
     }
     function mouseClicked(e) {
         for (var i = nmplotCanvas.containers.length - 1; i >= 0; i--) {
@@ -49,15 +79,30 @@ DragAndScale.prototype.bindEvents = function () {
     function mouseDown(e) {
         ds.isMouseDown = true;
         ds.mouseDownOnContainer = null;
+        var currMousePos = [e.pageX - rect.left, e.pageY - rect.top];
         for (var i = nmplotCanvas.containers.length - 1; i >= 0; i--) {
             if (
                 nmplotCanvas.containers[i].isPointInside(
                     e.pageX - rect.left,
-                    e.pageY - rect.top
+                    e.pageY - rect.top,
+                    5
                 )
             ) {
                 ds.mouseDownOnContainer = nmplotCanvas.containers[i];
                 break;
+            }
+        }
+        var cursorType = "auto";
+        ds.pointOnCorner = false;
+        for (var i = 0; i < nmplotCanvas.containers.length; i++) {
+            if (
+                nmplotCanvas.containers[i].pointOnSECorner(
+                    currMousePos[0],
+                    currMousePos[1]
+                )
+            ) {
+                ds.pointOnCorner = true;
+                cursorType = "se-resize";
             }
         }
     }

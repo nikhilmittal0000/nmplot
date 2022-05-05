@@ -5,6 +5,7 @@ var NmplotCanvas = function (canvasId, container) {
     this.description = "Object to render Nmplot container on canvas";
     this.backgroundColor = Nmplot.DEFAULT_BACKGROUND_COLOR;
 
+    this.scale = 1;
     this.isGridActive = Nmplot.DEFAULT_GRID_STATUS;
     this.axisColor = {
         x: Nmplot.DEFAULT_AXIS_COLOR.X,
@@ -32,15 +33,15 @@ NmplotCanvas.prototype.renderGrid = function () {
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.strokeStyle = this.axisColor.x;
-    this.ctx.moveTo(0, this.posY);
-    this.ctx.lineTo(this.canvas.width, this.posY);
+    this.ctx.moveTo(0, this.scale * this.posY);
+    this.ctx.lineTo(this.canvas.width, this.scale * this.posY);
     this.ctx.stroke();
 
     this.ctx.lineWidth = 1;
     this.ctx.beginPath();
     this.ctx.strokeStyle = this.axisColor.x;
-    this.ctx.moveTo(this.posX, 0);
-    this.ctx.lineTo(this.posX, this.canvas.height);
+    this.ctx.moveTo(this.scale * this.posX, 0);
+    this.ctx.lineTo(this.scale * this.posX, this.canvas.height);
     this.ctx.stroke();
 };
 NmplotCanvas.prototype.render = function () {
@@ -68,12 +69,15 @@ NmplotCanvas.prototype.renderContainer = function (container) {
     this.ctx.strokeStyle = "#8D8DAA";
     this.ctx.beginPath();
     this.ctx.rect(
-        this.posX + container.posX - container.width / 2,
-        this.posY + container.posY - container.height / 2,
-        container.width,
-        container.height
+        this.scale * (this.posX + container.posX - container.width / 2),
+        this.scale * (this.posY + container.posY - container.height / 2),
+        this.scale * container.width,
+        this.scale * container.height
     );
-    this.ctx.stroke();
+    if (container.borderVisible) {
+        this.ctx.stroke();
+    }
+
     this.ctx.fill();
     this.ctx.shadowBlur = 0;
 };
@@ -96,9 +100,9 @@ NmplotCanvas.prototype.renderShape = function (shape) {
         ];
         point = shape.container.getBoundedPoint(point[0], point[1]);
         if (j === 0) {
-            this.ctx.moveTo(point[0], point[1]);
+            this.ctx.moveTo(this.scale * point[0], this.scale * point[1]);
         } else {
-            this.ctx.lineTo(point[0], point[1]);
+            this.ctx.lineTo(this.scale * point[0], this.scale * point[1]);
         }
     }
     this.ctx.fill();
