@@ -35,14 +35,32 @@ DragAndScale.prototype.bindEvents = function () {
             if (ds.pointOnCorner) {
                 //Resize Window
                 console.log("Aaaaaa");
-                ds.mouseDownOnContainer.width +=
-                    currMousePos[0] - ds.last_mouse[0];
-                ds.mouseDownOnContainer.posX +=
-                    (currMousePos[0] - ds.last_mouse[0]) / 2;
-                ds.mouseDownOnContainer.height +=
-                    currMousePos[1] - ds.last_mouse[1];
-                ds.mouseDownOnContainer.posY +=
-                    (currMousePos[1] - ds.last_mouse[1]) / 2;
+                if (
+                    ds.mouseDownOnContainer.width <=
+                        ds.mouseDownOnContainer.min_width &&
+                    currMousePos[0] - ds.last_mouse[0] < 0
+                ) {
+                    ds.mouseDownOnContainer.width =
+                        ds.mouseDownOnContainer.min_width;
+                } else {
+                    ds.mouseDownOnContainer.width +=
+                        currMousePos[0] - ds.last_mouse[0];
+                    ds.mouseDownOnContainer.posX +=
+                        (currMousePos[0] - ds.last_mouse[0]) / 2;
+                }
+                if (
+                    ds.mouseDownOnContainer.height <=
+                        ds.mouseDownOnContainer.min_height &&
+                    currMousePos[1] - ds.last_mouse[1] < 0
+                ) {
+                    ds.mouseDownOnContainer.height =
+                        ds.mouseDownOnContainer.min_height;
+                } else {
+                    ds.mouseDownOnContainer.height +=
+                        currMousePos[1] - ds.last_mouse[1];
+                    ds.mouseDownOnContainer.posY +=
+                        (currMousePos[1] - ds.last_mouse[1]) / 2;
+                }
             } else if (ds.mouseDownOnContainer == null) {
                 // Pan Background
                 nmplotCanvas.posX += currMousePos[0] - ds.last_mouse[0];

@@ -1,11 +1,10 @@
 {
   "name": "nmplot",
   "version": "1.0.0",
-  "description": "Javascript library to draw and animate shapes on canvas",
-  "main": "src/main.js",
+  "description": "Javascript library to visualize scientific equations with shapes and graphs on HTML canvas",
   "scripts": {
-    "build" : "webpack --config webpack.config.js",
-    "watch" : "webpack --watch --config webpack.config.js"
+    "build" : "webpack",
+    "watch" : "webpack --watch"
   },
   "author": "Nikhil Mittal",
   "license": "ISC",

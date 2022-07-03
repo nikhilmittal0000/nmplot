@@ -1,20 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Example 1</title>
-    <!-- <link rel="stylesheet" href="style.css"> -->
-  </head>
-  <body>
-      <canvas id="mycanvas"></canvas>
-	<script src="../build/nmplot.js"></script>
-    <script>
-        var s1 = new NmplotShape("rectangle", { l1: 50, l2: 30 });
-        container = new NmplotContainer();
-        container.add(s1);
-        var nmPlotCanvas = new NmplotCanvas("mycanvas", container);
-    </script>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+        <title>Example 1</title>
+        <!-- <link rel="stylesheet" href="style.css"> -->
+    </head>
+    <body>
+        <canvas id="mycanvas"></canvas>
+        <script src="../build/nmplot.js"></script>
+        <script>
+            var s1 = new NmplotShape("rectangle", { l1: 50, l2: 30 });
+            container = new NmplotContainer();
+            container.add(s1);
+            var nmPlotCanvas = new NmplotCanvas("mycanvas");
+            nmPlotCanvas.add(container);
+        </script>
+    </body>
 </html>

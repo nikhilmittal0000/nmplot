@@ -5,9 +5,13 @@ var NmplotContainer = function () {
     this.description = "Container for all the shapes";
     this.shapes = [];
     this.width = Nmplot.DEFAULT_CONTAINER_DIMS.X;
+    this.min_width = Nmplot.DEFAULT_CONTAINER_MIN_WIDTH;
     this.height = Nmplot.DEFAULT_CONTAINER_DIMS.Y;
+    this.min_height = Nmplot.DEFAULT_CONTAINER_MIN_HEIGHT;
+    this.title_height = 20;
     this.posX = Nmplot.DEFAULT_CONTAINER_POS.X;
     this.posY = Nmplot.DEFAULT_CONTAINER_POS.Y;
+    this.unit_size = Nmplot.DEFAULT_UNIT_SIZE; //unit size is basically number of pixel per unit
     this.selected = false;
     this.borderVisible = true;
 };

@@ -1,6 +1,6 @@
 const { DragAndScale } = require("./dragAndScale");
 
-var NmplotCanvas = function (canvasId, container) {
+var NmplotCanvas = function (canvasId) {
     this.name = "NmplotCanvas";
     this.description = "Object to render Nmplot container on canvas";
     this.backgroundColor = Nmplot.DEFAULT_BACKGROUND_COLOR;
@@ -16,13 +16,18 @@ var NmplotCanvas = function (canvasId, container) {
     this.ctx = this.canvas.getContext("2d");
     // this.createMouseEventsHandler();
     this.ds = new DragAndScale(this);
-    this.containers = [container];
-    container.canvas = this;
+    this.containers = [];
+    // container.canvas = this;
     this.setCanvasDims(
         Nmplot.DEFAULT_CANVAS_DIMS.WIDTH,
         Nmplot.DEFAULT_CANVAS_DIMS.HEIGHT
     );
     this.resetPosition(false);
+    this.render();
+};
+NmplotCanvas.prototype.add = function (container) {
+    this.containers.push(container);
+    container.canvas = this;
     this.render();
 };
 NmplotCanvas.prototype.renderBackground = function () {
@@ -43,6 +48,10 @@ NmplotCanvas.prototype.renderGrid = function () {
     this.ctx.moveTo(this.scale * this.posX, 0);
     this.ctx.lineTo(this.scale * this.posX, this.canvas.height);
     this.ctx.stroke();
+
+    this.ctx.beginPath();
+    this.ctx.arc(this.posX, this.posY, 20, 0, 2 * Math.PI, false);
+    this.ctx.stroke();
 };
 NmplotCanvas.prototype.render = function () {
     this.renderBackground();
@@ -59,21 +68,136 @@ NmplotCanvas.prototype.render = function () {
     }
 };
 NmplotCanvas.prototype.renderContainer = function (container) {
-    this.ctx.lineWidth = 5;
+    this.renderContainerTitleBox(container);
+    this.renderContainerTitle(container);
+    this.renderContainerContentArea(container);
+};
+NmplotCanvas.prototype.renderContainerTitleBox = function (container) {
+    this.ctx.lineWidth = 1;
+    this.ctx.shadowBlur = 0;
+    if (container.selected) {
+        this.ctx.shadowColor = "black";
+        this.ctx.shadowBlur = 1;
+    }
+    this.ctx.fillStyle = "black";
+    this.ctx.strokeStyle = "black";
+    // this.ctx.beginPath();
+    // this.ctx.rect(
+    //     this.scale * (this.posX + container.posX - container.width / 2),
+    //     this.scale * (this.posY + container.posY - container.height / 2),
+    //     this.scale * container.width,
+    //     this.scale * container.height
+    // );
+    this.ctx.beginPath();
+    this.ctx.moveTo(
+        this.posX + container.posX - container.width / 2,
+        this.posY +
+            container.posY -
+            container.height / 2 +
+            container.title_height
+    );
+    this.ctx.quadraticCurveTo(
+        this.posX + container.posX - container.width / 2,
+        this.posY + container.posY - container.height / 2,
+        this.posX + container.posX - container.width / 2 + 10,
+        this.posY + container.posY - container.height / 2
+    );
+    this.ctx.lineTo(
+        this.posX + container.posX + container.width / 2 - 10,
+        this.posY + container.posY - container.height / 2
+    );
+    this.ctx.quadraticCurveTo(
+        this.posX + container.posX + container.width / 2,
+        this.posY + container.posY - container.height / 2,
+        this.posX + container.posX + container.width / 2,
+        this.posY + container.posY - container.height / 2 + 20
+    );
+    if (container.borderVisible) {
+        this.ctx.stroke();
+    }
+
+    this.ctx.fill();
+    this.ctx.shadowBlur = 0;
+};
+NmplotCanvas.prototype.renderContainerTitle = function (container) {
+    this.ctx.font = "15px Arial";
+    this.ctx.fillStyle = "white";
+    this.ctx.textAlign = "center";
+    var txt = container.name;
+    this.ctx.fillText(
+        txt,
+        this.posX + container.posX,
+        this.posY + container.posY - container.height / 2 + 15
+    );
+};
+NmplotCanvas.prototype.renderContainerContentArea = function (container) {
+    this.ctx.lineWidth = 1;
     this.ctx.shadowBlur = 0;
     if (container.selected) {
         this.ctx.shadowColor = "#696969";
         this.ctx.shadowBlur = 5;
     }
-    this.ctx.fillStyle = "#F7F5F2";
-    this.ctx.strokeStyle = "#8D8DAA";
+    this.ctx.fillStyle = "white";
+    this.ctx.strokeStyle = "black";
     this.ctx.beginPath();
-    this.ctx.rect(
-        this.scale * (this.posX + container.posX - container.width / 2),
-        this.scale * (this.posY + container.posY - container.height / 2),
-        this.scale * container.width,
-        this.scale * container.height
+    // this.ctx.rect(
+    //     this.scale * (this.posX + container.posX - container.width / 2),
+    //     this.scale * (this.posY + container.posY - container.height / 2),
+    //     this.scale * container.width,
+    //     this.scale * container.height
+    // );
+    this.ctx.beginPath();
+    this.ctx.moveTo(
+        this.posX + container.posX - container.width / 2,
+        this.posY +
+            container.posY -
+            container.height / 2 +
+            container.title_height
     );
+    this.ctx.lineTo(
+        this.posX + container.posX + container.width / 2,
+        this.posY +
+            container.posY -
+            container.height / 2 +
+            container.title_height
+    );
+    // this.ctx.quadraticCurveTo(
+    //     this.posX + container.posX + container.width / 2,
+    //     this.posY + container.posY - container.height / 2,
+    //     this.posX + container.posX + container.width / 2,
+    //     this.posY + container.posY - container.height / 2 + 10
+    // );
+    this.ctx.lineTo(
+        this.posX + container.posX + container.width / 2,
+        this.posY + container.posY + container.height / 2 - 10
+    );
+    this.ctx.quadraticCurveTo(
+        this.posX + container.posX + container.width / 2,
+        this.posY + container.posY + container.height / 2,
+        this.posX + container.posX + container.width / 2 - 10,
+        this.posY + container.posY + container.height / 2
+    );
+    this.ctx.lineTo(
+        this.posX + container.posX - container.width / 2 + 10,
+        this.posY + container.posY + container.height / 2
+    );
+    this.ctx.quadraticCurveTo(
+        this.posX + container.posX - container.width / 2,
+        this.posY + container.posY + container.height / 2,
+        this.posX + container.posX - container.width / 2,
+        this.posY + container.posY + container.height / 2 - 10
+    );
+    this.ctx.closePath();
+    // this.ctx.lineTo(
+    //     this.posX + container.posX - container.width / 2,
+    //     this.posY + container.posY - container.height / 2 + 10
+    // );
+    // this.ctx.quadraticCurveTo(
+    //     this.posX + container.posX - container.width / 2,
+    //     this.posY + container.posY - container.height / 2,
+    //     this.posX + container.posX - container.width / 2 + 10,
+    //     this.posY + container.posY - container.height / 2
+    // );
     if (container.borderVisible) {
         this.ctx.stroke();
     }

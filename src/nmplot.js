@@ -16,6 +16,8 @@ var Nmplot = {
         X: 0,
         Y: 0,
     },
+    DEFAULT_CONTAINER_MIN_WIDTH: 50,
+    DEFAULT_CONTAINER_MIN_HEIGHT: 50,
 
     //CANVAS
     DEFAULT_CANVAS_DIMS: {
@@ -26,11 +28,8 @@ var Nmplot = {
         X: "red",
         Y: "blue",
     },
-    DEFAULT_UNIT_SIZE: {
-        X: 10,
-        Y: 10,
-    },
-    DEFAULT_BACKGROUND_COLOR: "#DFDFDE",
+    DEFAULT_UNIT_SIZE: 20,
+    DEFAULT_BACKGROUND_COLOR: "white", //"#DFDFDE",
     DEFAULT_GRID_STATUS: true,
     createCoord: function (x, y) {
         return {
